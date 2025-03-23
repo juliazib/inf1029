@@ -169,10 +169,10 @@ int main(int argc, char *argv[]) {
     result2.values = r2;
 
     /* Scalar product of matrix A */
-    printf("[%d] Executing scalar_matrix_mult(%5.1f, matrixA)...\n", __LINE__, scalar_value);
+    printf("[%d] Executing scalar_matrix_mult_rows(%5.1f, matrixA)...\n", __LINE__, scalar_value);
     start = clock();
-    if (scalar_matrix_mult(scalar_value, &matrix1, &result1)) {
-        fprintf(stderr, "[%d] %s: scalar_matrix_mult problem.\n", __LINE__, argv[0]);
+    if (scalar_matrix_mult_rows(scalar_value, &matrix1, &result1)) {
+        fprintf(stderr, "[%d] %s: scalar_matrix_mult_rows problem.\n", __LINE__, argv[0]);
         return 1;
     }
     stop = clock();
