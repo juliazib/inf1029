@@ -123,7 +123,10 @@ int main(int argc, char *argv[]) {
         }
         exit(4);
     }
-
+    if(dim1_cols%8 || dim1_rows%8 || dim2_cols%8 || dim2_rows%8) {
+        fprintf(stderr, "[%d] Some dimension(s) of one of the matrices is not a multiple of 8\n", __LINE__);
+        return 12;
+    }
     printf("[%d] Starting...\n", __LINE__);
 
     // allocate memory arrays for the 4 matrices
@@ -164,16 +167,17 @@ int main(int argc, char *argv[]) {
     result1.values = r1;
 
     // 2nd result
-    result2.rows = dim2_rows;
+    result2.rows = dim1_rows;
     result2.cols = dim2_cols;
     result2.values = r2;
 
     /* Scalar product of matrix A */
-    printf("[%d] Executing scalar_matrix_mult_rows(%5.1f, matrixA)...\n", __LINE__, scalar_value);
+    printf("[%d] Executing scalar_matrix_mult(%f, matrixA)...\n", __LINE__, scalar_value);
+    printf("[%d] Multiplying scalar %f by matrix %ldx%ld resulting matrix %ldx%ld\n", __LINE__, scalar_value, matrix1.rows, matrix1.cols, result1.rows, result1.cols);
     start = clock();
-    if (scalar_matrix_mult_rows(scalar_value, &matrix1, &result1)) {
-        fprintf(stderr, "[%d] %s: scalar_matrix_mult_rows problem.\n", __LINE__, argv[0]);
-        return 1;
+    if (scalar_matrix_mult(scalar_value, &matrix1, &result1)) {
+        fprintf(stderr, "[%d] %s: scalar_matrix_mult problem.\n", __LINE__, argv[0]);
+        return 8;
     }
     stop = clock();
     printf("[%d] Scalar product: %f ms\n", __LINE__, timedifference_msec(start, stop));
@@ -182,7 +186,7 @@ int main(int argc, char *argv[]) {
     printf("[%d] Writing first result: %s...\n", __LINE__, result1_filename);
     if(!store_matrix(&result1, result1_filename)) {
 	    fprintf(stderr, "%s: failed to write first result to file.", argv[0]);
-	    return 1;
+	    return 9;
     }
 
     /* Check for errors */
@@ -191,10 +195,11 @@ int main(int argc, char *argv[]) {
 
     /* Calculate the product between matrix A and matrix B */
     printf("[%d] Executing matrix_matrix_mult(matrixA, mattrixB, matrixC)...\n", __LINE__);
+    printf("[%d] Multiplying matrix %ldx%ld by matrix %ldx%ld resulting matrix %ldx%ld\n", __LINE__, matrix1.rows, matrix1.cols, matrix2.rows, matrix2.cols, result2.rows, result2.cols);
     start = clock();
     if (matrix_matrix_mult(&matrix1, &matrix2, &result2)) {
         fprintf(stderr, "[%d] %s: matrix_matrix_mult problem.", __LINE__, argv[0]);
-        return 1;
+        return 10;
     }
     stop = clock();
     printf("[%d] *** Matrix product: %f ms\n", __LINE__, timedifference_msec(start, stop));
@@ -203,7 +208,7 @@ int main(int argc, char *argv[]) {
     printf("[%d] Writing second result: %s...\n", __LINE__, result2_filename);
     if(!store_matrix(&result2, result2_filename)) {
   	    fprintf(stderr, "%s: failed to write second result to file.", argv[0]);
-	    return 1;
+	    return 11;
     }
 
     /* Check foor errors */
@@ -272,7 +277,7 @@ int store_matrix(matrix *matrix, char *filename) {
     }
   
     if(fwrite(matrix->values, sizeof(float), n, fd) != n) {
-        fprintf(stderr, "[%d] Error writing to file %s: short write (less than 8 floats)\n", __LINE__, filename);
+        fprintf(stderr, "[%d] Error writing to file %s: short write\n", __LINE__, filename);
         return 1;
     }
   
@@ -285,7 +290,7 @@ int check_linear_errors(matrix *source, matrix *destination, float scalar_value)
     for(int line=0; line<source->rows; line++) {
         for(int row=0; row<source->cols; row++) {
             int pos = line*source->cols+row;
-            if(fabs((source->values[pos]-destination->values[pos])/destination->values[pos]) > 0.0001) {
+            if(fabs((scalar_value*source->values[pos]-destination->values[pos])/destination->values[pos]) > 0.0001) {
                 fprintf(stderr, "[%d] Linear error at [%d, %d] - %f x %f\n", __LINE__, line, row, source->values[pos], destination->values[pos]);
                 return 0;
             }

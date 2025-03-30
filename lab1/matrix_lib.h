@@ -9,8 +9,7 @@ typedef struct {
 	float *values;
 } matrix;
 
-int scalar_matrix_mult_rows(float scalar_value, matrix *m, matrix *r);
-int scalar_matrix_mult_cols(float scalar_value, matrix *m, matrix *r);
+int scalar_matrix_mult(float scalar_value, matrix *m, matrix *r);
 int matrix_matrix_mult(matrix *m1, matrix *m2, matrix *r);
 int load_matrix(matrix *matrix, char *filename);
 int store_matrix(matrix *matrix, char *filename);

@@ -1,7 +1,7 @@
 #include "matrix_lib.h"
 #include <stdlib.h>
 
-int scalar_matrix_mult_rows(float scalar_value, matrix *m, matrix *r){
+int scalar_matrix_mult(float scalar_value, matrix *m, matrix *r){
     if(!m || !r || !m->values || !r->values) return -1;
 
 
