@@ -2,6 +2,19 @@
 #include <stdlib.h>
 
 int scalar_matrix_mult(float scalar_value, matrix *m, matrix *r){
+    //intel intrinsics
+}
+
+/**
+ * @brief multiplies a matrix by a scalar value (rows first)
+ * 
+ * @param scalar_value value that multiplies the matrix
+ * @param m pointer to the original matrix
+ * @param r pointer to the result matrix
+ * @return 0 in case of success or the error code
+ */
+
+int scalar_matrix_mult_lines(float scalar_value, matrix* m, matrix* r) {
     if(!m || !r || !m->values || !r->values) return -1;
 
 
@@ -13,8 +26,17 @@ int scalar_matrix_mult(float scalar_value, matrix *m, matrix *r){
         }
     }
 
-    return 0;   
+    return 0;
 }
+
+/**
+ * @brief multiplies a matrix by a scalar value (columns first)
+ * 
+ * @param scalar_value value that multiplies the matrix
+ * @param m pointer to the original matrix
+ * @param r pointer to the result matrix
+ * @return 0 in case of success or the error code
+ */
 
 int scalar_matrix_mult_cols(float scalar_value, matrix *m, matrix *r) {
     if(!m || !r || !m->values || !r->values) return -1;
@@ -30,13 +52,50 @@ int scalar_matrix_mult_cols(float scalar_value, matrix *m, matrix *r) {
     return 0;
 }
 
+/**
+ * @brief multiplies a matrix by a scalar value (pointer-based version)
+ * 
+ * @param scalar_value value that multiplies the matrix
+ * @param m pointer to the original matrix
+ * @param r pointer to the result matrix
+ * @return 0 in case of success or the error code
+ */
+
+int scalar_matrix_mult_ptr(float scalar_value, matrix* m, matrix* r) {
+    if(!m || !r || !m->values || !r->values) return -1; 
+
+    int size = m->rows * m->cols;
+
+    float* m_ptr = m->values;
+    float* r_ptr = r->values;
+    
+    for(int i = 0; i < size; i++) {
+        *r_ptr = scalar_value * *(m_ptr);
+        m_ptr++;
+        r_ptr++;
+    }
+
+    return 0;
+}
+
 int matrix_matrix_mult(matrix *m1, matrix *m2, matrix *r){
+    //intel intrinsics
+}
+
+/**
+ * @brief multiplies two matrices (traditional version)
+ * 
+ * @param m1 pointer to the first matrix
+ * @param m2 pointer to the second matrix
+ * @param r pointer to the result matrix
+ * @return 0 in case of success or the error code
+ */
+
+int matrix_matrix_mult_trad(matrix *m1, matrix *m2, matrix *r){
     if(m1->cols != m2->rows) return 1;
     
     r->rows = m1->rows;
     r->cols = m2->cols;
-
-    r->values = (float*) malloc(r->rows * r->cols * sizeof(float));
 
     if(!r->values) return -1;
 
@@ -54,3 +113,6 @@ int matrix_matrix_mult(matrix *m1, matrix *m2, matrix *r){
 
 }
 
+int matrix_matrix_mult_opt(matrix* m1, matrix* m2, matrix* r) {
+    
+}

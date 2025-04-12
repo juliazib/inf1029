@@ -9,22 +9,6 @@
 
 #include "matrix_lib.h"
 
-/**
- * Uso:
- * 
- * matrix_lib_test   5.0   8   16   8   floats_256_2.0f.dat   floats_256_5.0f.dat   result1.dat   result2.dat
- * 
- * Onde,
- * 
- * 5.0 é o valor escalar que multiplicará a primeira matriz;
- * 8 é o número de linhas da primeira matriz;
- * 16 é o número de colunas da primeira matriz é o número de linhas da segunda matriz;
- * 8 é o número de colunas da segunda matriz;
- * floats_256_2.0f.dat é o nome do arquivo de floats que será usado para carregar a primeira matriz;
- * floats_256_5.0f.dat é o nome do arquivo de floats que será usado para carregar a segunda matriz;
- * result1.dat é o nome do arquivo de floats onde o primeiro resultado será armazenado;
- * result2.dat é o nome do arquivo de floats onde o segundo resultado será armazenado.
- */
 int main(int argc, char *argv[]) {
     // dados da matriz
     float scalar_value;
@@ -146,7 +130,7 @@ int main(int argc, char *argv[]) {
     matrix1.rows = dim1_rows;
     matrix1.cols = dim1_cols;
     matrix1.values = m1;
-    if (!load_matrix(&matrix1, matrix1_filename)) {
+    if (load_matrix(&matrix1, matrix1_filename)) {
         fprintf(stderr, "[%d] %s: matrix 1 initialization problem.\n", __LINE__, argv[0]);
         exit(6);
     }
@@ -156,7 +140,7 @@ int main(int argc, char *argv[]) {
     matrix2.rows = dim2_rows;
     matrix2.cols = dim2_cols;
     matrix2.values = m2;
-    if (!load_matrix(&matrix2, matrix2_filename)) {
+    if (load_matrix(&matrix2, matrix2_filename)) {
         fprintf(stderr, "[%d] %s: matrix 2 initialization problem.\n", __LINE__, argv[0]);
         exit(7);
     }
@@ -184,7 +168,7 @@ int main(int argc, char *argv[]) {
 
       /* Write first result */
     printf("[%d] Writing first result: %s...\n", __LINE__, result1_filename);
-    if(!store_matrix(&result1, result1_filename)) {
+    if(store_matrix(&result1, result1_filename)) {
 	    fprintf(stderr, "%s: failed to write first result to file.", argv[0]);
 	    return 9;
     }
@@ -206,7 +190,7 @@ int main(int argc, char *argv[]) {
 
     /* Write second result */
     printf("[%d] Writing second result: %s...\n", __LINE__, result2_filename);
-    if(!store_matrix(&result2, result2_filename)) {
+    if(store_matrix(&result2, result2_filename)) {
   	    fprintf(stderr, "%s: failed to write second result to file.", argv[0]);
 	    return 11;
     }
@@ -218,6 +202,11 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
+/**
+ * Shows how to use this program
+ * 
+ * @param name pointer to this program filename string
+ */
 void usage(const char *name) {
     printf("Usage: %s [OPTION]...\n", name);
     printf("Multiply matrix by scalar and by matrix\n");
@@ -233,6 +222,10 @@ void usage(const char *name) {
 
 /**
  * Read matrix from secondary memory
+ * 
+ * @param matrix pointer to the matrix structure
+ * @param filename filename string
+ * @return 0 in case of success or the error code
  */
 int load_matrix(matrix *matrix, char *filename) {
     unsigned long n;
@@ -242,24 +235,31 @@ int load_matrix(matrix *matrix, char *filename) {
     n = matrix->rows * matrix->cols;
   
     /* Check the integrity of the matrix */
-    if(n == 0 || matrix->values == NULL) return 0;
+    if(n == 0 || matrix->values == NULL) return 1;
   
     /* Try to open file of floats */
     if((fd = fopen(filename, "rb")) == NULL) {
       fprintf(stderr, "[%d] Unable to open file '%s'\n", __LINE__, filename);
-      return 0;
+      return 2;
     }
   
     if(fread(matrix->values, sizeof(float), n, fd) != n) {
         fprintf(stderr, "[%d] Error reading from file '%s': short read (less than 8 floats)\n", __LINE__, filename);
-        return 0;
+        return 3;
     }
   
     if(fd != NULL) fclose(fd);
   
-    return 1;
+    return 0;
 }
 
+/**
+ * @brief store the matrix at filename file
+ * 
+ * @param matrix matrix to be stored
+ * @param filename file filename
+ * @return 0 in case of success or the error code
+ */
 int store_matrix(matrix *matrix, char *filename) {
     unsigned long int n = 0;
     FILE *fd = NULL;
@@ -268,37 +268,53 @@ int store_matrix(matrix *matrix, char *filename) {
     n = matrix->rows * matrix->cols;
   
     /* Check the integrity of the matrix */
-    if(n == 0 || matrix->values == NULL) return 0;
+    if(n == 0 || matrix->values == NULL) return 1;
   
     /* Try to open file of floats */
     if((fd = fopen(filename, "wb")) == NULL) {
       fprintf(stderr, "[%d] Unable to open file %s\n", __LINE__, filename);
-      return 0;
+      return 2;
     }
   
     if(fwrite(matrix->values, sizeof(float), n, fd) != n) {
         fprintf(stderr, "[%d] Error writing to file %s: short write\n", __LINE__, filename);
-        return 1;
+        return 3;
     }
   
     if(fd != NULL) fclose(fd);
   
-    return 1;
+    return 0;
 }
 
+/**
+ * @brief checks for linear multiplication error
+ * 
+ * @param source source matrix
+ * @param destination destination matrix
+ * @param scalar_value value scalar to multiply source matrix
+ * @return 0 in case of success or the error code
+ */
 int check_linear_errors(matrix *source, matrix *destination, float scalar_value) {
     for(int line=0; line<source->rows; line++) {
         for(int row=0; row<source->cols; row++) {
             int pos = line*source->cols+row;
             if(fabs((scalar_value*source->values[pos]-destination->values[pos])/destination->values[pos]) > 0.0001) {
                 fprintf(stderr, "[%d] Linear error at [%d, %d] - %f x %f\n", __LINE__, line, row, source->values[pos], destination->values[pos]);
-                return 0;
+                return 1;
             }
         }
     }
     return 0;
 }
 
+/**
+ * @brief checks for matrix multiplication error
+ * 
+ * @param matA 1st matrix
+ * @param matB 2nd matrix
+ * @param matC matrix resulted
+ * @return 0 in case of success or the error code
+ */
 int check_mult_errors(matrix *matA, matrix *matB, matrix *matC) {
     // Loop para calcular cada elemento da matriz resultante
     for (int i = 0; i < matC->rows; i++) {
@@ -309,13 +325,19 @@ int check_mult_errors(matrix *matA, matrix *matB, matrix *matC) {
             }
             if(fabs((matC->values[i * matC->cols + j]-sum)/sum) > 0.0001) {
                 fprintf(stderr, "Multiplication error at [%d, %d] - %f x %f\n", i, j, matC->values[i * matC->cols + j], sum);
-                return 0;
+                return 1;
             }
         }
     }
-    return 1;
+    return 0;
 }
 
+/**
+ * @brief print a matrix
+ * 
+ * @param matrix matrix to be printed
+ * @return 0 in case of success or the error code
+ */
 int print_matrix(matrix *matrix) {
     unsigned long int i;
     unsigned long int n;
@@ -342,6 +364,6 @@ int print_matrix(matrix *matrix) {
             break;
         }
     }
-    return 1;
+    return 0;
 }
   
