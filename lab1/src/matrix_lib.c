@@ -1,8 +1,43 @@
 #include "matrix_lib.h"
 #include <stdlib.h>
 
+#include <immintrin.h> 
+
+
+int matrix_matrix_mult(matrix *m1, matrix *m2, matrix *r){
+    if (!m1 || !m2 || !r || !m1->values || !m2->values || !r->values)
+        return -1;
+
+    if (m1->cols != m2->rows || m1->rows != r->rows || m2->cols != r->cols)
+        return -2;
+
+
+
+    return 0;
+}
+
+
+/**
+ * @brief multiplies a matrix by a scalar value (using intel intrinsics lib)
+ * 
+ * @param scalar_value value that multiplies the matrix
+ * @param m pointer to the original matrix
+ * @param r pointer to the result matrix
+ * @return 0 in case of success or the error code
+ */
 int scalar_matrix_mult(float scalar_value, matrix *m, matrix *r){
-    //intel intrinsics
+    if(!m || !r || !m->values || !r->values) return -1;
+    if (m->rows != r->rows || m->cols != r->cols) return -2;
+
+    __m256 scalarArr = _mm256_set1_ps(scalar_value); 
+   
+    int total = m->rows * m->cols;
+    for (int i = 0; i + 7 < total; i += 8) {
+        __m256 mLine = _mm256_loadu_ps(&m->values[i]);    
+        __m256 resLine = _mm256_mul_ps(mLine, scalarArr);  
+        _mm256_storeu_ps(&r->values[i], resLine);
+    }
+    return 0;    
 }
 
 /**
@@ -16,7 +51,7 @@ int scalar_matrix_mult(float scalar_value, matrix *m, matrix *r){
 
 int scalar_matrix_mult_lines(float scalar_value, matrix* m, matrix* r) {
     if(!m || !r || !m->values || !r->values) return -1;
-
+    if (m->rows != r->rows || m->cols != r->cols) return -2;
 
     for(int i = 0; i < m->rows; i++){
         for(int j = 0; j < m->cols; j++) {
@@ -40,6 +75,8 @@ int scalar_matrix_mult_lines(float scalar_value, matrix* m, matrix* r) {
 
 int scalar_matrix_mult_cols(float scalar_value, matrix *m, matrix *r) {
     if(!m || !r || !m->values || !r->values) return -1;
+    if (m->rows != r->rows || m->cols != r->cols) return -2;
+
 
     for(int j = 0; j < m->cols; j++){
         for(int i = 0; i < m->rows; i++){
@@ -78,9 +115,6 @@ int scalar_matrix_mult_ptr(float scalar_value, matrix* m, matrix* r) {
     return 0;
 }
 
-int matrix_matrix_mult(matrix *m1, matrix *m2, matrix *r){
-    //intel intrinsics
-}
 
 /**
  * @brief multiplies two matrices (traditional version)
@@ -114,5 +148,5 @@ int matrix_matrix_mult_trad(matrix *m1, matrix *m2, matrix *r){
 }
 
 int matrix_matrix_mult_opt(matrix* m1, matrix* m2, matrix* r) {
-    
+    return 0;
 }
