@@ -1,6 +1,8 @@
 #!/bin/bash
 #passa os parametros por meio da chamada, os dois parametros sao os valores de linha e coluna.
 
+mkdir -p ../build
+
 arquivo1="../arquivos/matrix1.dat"
 arquivo2="../arquivos/matrix2.dat"
 

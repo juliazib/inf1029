@@ -1,6 +1,6 @@
 #include "matrix_lib.h"
 #include <stdlib.h>
-
+#include <string.h>
 #include <immintrin.h> 
 
 
@@ -147,6 +147,50 @@ int matrix_matrix_mult_trad(matrix *m1, matrix *m2, matrix *r){
 
 }
 
+/**
+ * @brief multiplies two matrices (optimized version)
+ * 
+ * @param m1 pointer to the first matrix
+ * @param m2 pointer to the second matrix
+ * @param r pointer to the result matrix
+ * @return 0 in case of success or the error code
+ */
+
 int matrix_matrix_mult_opt(matrix* m1, matrix* m2, matrix* r) {
+    if(m1->cols != m2->rows) return 1;
+
+    r->rows = m1->rows;
+    r->cols = m2->cols;
+
+    if(!r->values) return -1;
+
+    memset(r->values, 0, sizeof(float) * r->rows * r->cols);
+
+    float* m1_ptr = m1->values;
+    float* m2_ptr = m2->values;
+    float* r_ptr = r->values;
+
+    for(int i = 0; i < m1->rows; i++) {
+        float* m1_elem_ptr = m1_ptr;
+        float* r_row_ptr = r_ptr;
+
+        for(int j = 0; j < m1->cols; j++) {
+            float value = *m1_elem_ptr;
+            float* m2_row_ptr = m2_ptr + (j * m2->cols);
+
+            float* r_col_ptr = r_row_ptr;
+
+            for(int k = 0; k < m2->cols; k++) {
+                *r_col_ptr += value * *m2_row_ptr;
+                m2_row_ptr++;
+                r_col_ptr++;
+            }
+            m1_elem_ptr++;
+        }
+        m1_ptr += m1->cols;
+        r_ptr += r->cols;
+    }
+
+
     return 0;
 }
