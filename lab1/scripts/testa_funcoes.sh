@@ -1,7 +1,7 @@
 #!/bin/bash
 #passa os parametros por meio da chamada, os dois parametros sao os valores de linha e coluna.
 
-mkdir -p ../build
+mkdir -p ../build && gcc  -Wall -o ../build/gera_matrix ../src/gera_matrix.c
 
 arquivo1="../arquivos/matrix1.dat"
 arquivo2="../arquivos/matrix2.dat"
