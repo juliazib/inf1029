@@ -4,14 +4,34 @@
 #include <immintrin.h> 
 
 
-int matrix_matrix_mult(matrix *m1, matrix *m2, matrix *r){
-    if (!m1 || !m2 || !r || !m1->values || !m2->values || !r->values)
-        return -1;
+int matrix_matrix_mult(matrix* m1, matrix* m2, matrix* r) {
+    if (m1->cols != m2->rows) return 1;
+    
+    r->rows = m1->rows;
+    r->cols = m2->cols;
 
-    if (m1->cols != m2->rows || m1->rows != r->rows || m2->cols != r->cols)
-        return -2;
+    if (!r->values) return -1;
+    memset(r->values, 0, sizeof(float) * r->rows * r->cols);
 
+    int m = m1->rows;
+    int n = m1->cols;
+    int p = m2->cols;
 
+    for (int i = 0; i < m; ++i) {
+        for (int k = 0; k < n; ++k) {
+            float a = m1->values[i * n + k];
+            __m256 a_vec = _mm256_set1_ps(a);
+
+            int j = 0;
+            for (; j <= p - 8; j += 8) {
+                __m256 b_vec = _mm256_loadu_ps(&m2->values[k * p + j]);
+                __m256 r_vec = _mm256_loadu_ps(&r->values[i * p + j]);
+                r_vec = _mm256_fmadd_ps(a_vec, b_vec, r_vec);
+                _mm256_storeu_ps(&r->values[i * p + j], r_vec);
+            }
+
+        }
+    }
 
     return 0;
 }
