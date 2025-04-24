@@ -14,6 +14,7 @@ if [ $# -ge 3 ]; then
     colunasM2=$3
 fi
 
+mkdir -p ../arquivos
 
 arquivo1="../arquivos/matrix1.dat"
 arquivo2="../arquivos/matrix2.dat"
