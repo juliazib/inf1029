@@ -3,34 +3,53 @@
 #include <string.h>
 #include <immintrin.h> 
 
+/**
+ * @brief multiplies tow matrices (using intel intrinsics lib)
+ * 
+ * @param m1 pointer to the first matrix
+ * @param m2 pointer to the second matrix
+ * @param r pointer to the result matrix
+ * @return 0 in case of success or the error code
+ */
 
 int matrix_matrix_mult(matrix* m1, matrix* m2, matrix* r) {
-    if (m1->cols != m2->rows) return 1;
-    
+    if(m1->cols != m2->rows) return 1;
+
     r->rows = m1->rows;
     r->cols = m2->cols;
 
-    if (!r->values) return -1;
+    if(!r->values) return -1;
+
     memset(r->values, 0, sizeof(float) * r->rows * r->cols);
 
-    int m = m1->rows;
-    int n = m1->cols;
-    int p = m2->cols;
+    float* m1_ptr = m1->values;
+    float* m2_ptr = m2->values;
+    float* r_ptr = r->values;
 
-    for (int i = 0; i < m; ++i) {
-        for (int k = 0; k < n; ++k) {
-            float a = m1->values[i * n + k];
-            __m256 a_vec = _mm256_set1_ps(a);
+    for(int i = 0; i < m1->rows; i++) {
+        float* m1_elem_ptr = m1_ptr;
+        float* r_row_ptr = r_ptr;
 
-            int j = 0;
-            for (; j <= p - 8; j += 8) {
-                __m256 b_vec = _mm256_load_ps(&m2->values[k * p + j]);
-                __m256 r_vec = _mm256_load_ps(&r->values[i * p + j]);
-                r_vec = _mm256_fmadd_ps(a_vec, b_vec, r_vec);
-                _mm256_store_ps(&r->values[i * p + j], r_vec);
+        for(int j = 0; j < m1->cols; j++) {
+            float value = *m1_elem_ptr;
+            float* m2_row_ptr = m2_ptr + (j * m2->cols);
+
+            float* r_col_ptr = r_row_ptr;
+            __m256 value_vector = _mm256_set1_ps(value);
+
+            for(int k = 0; k < m2->cols; k+=8) {
+                __m256 m2_vals = _mm256_load_ps(m2_row_ptr);
+                __m256 r_vals = _mm256_load_ps(r_col_ptr);
+                __m256 mult = _mm256_mul_ps(m2_vals, value_vector);
+                __m256 sum = _mm256_add_ps(r_vals, mult);
+                _mm256_store_ps(r_col_ptr, sum);
+                m2_row_ptr+=8;
+                r_col_ptr+=8;
             }
-
+            m1_elem_ptr++;
         }
+        m1_ptr += m1->cols;
+        r_ptr += r->cols;
     }
 
     return 0;
@@ -52,7 +71,7 @@ int scalar_matrix_mult(float scalar_value, matrix *m, matrix *r){
     __m256 scalarArr = _mm256_set1_ps(scalar_value); 
    
     int total = m->rows * m->cols;
-    for (int i = 0; i + 7 < total; i += 8) {
+    for (int i = 0; i < total; i += 8) {
         __m256 mLine = _mm256_load_ps(&m->values[i]);    
         __m256 resLine = _mm256_mul_ps(mLine, scalarArr);  
         _mm256_store_ps(&r->values[i], resLine);
