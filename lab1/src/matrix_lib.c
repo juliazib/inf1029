@@ -24,10 +24,10 @@ int matrix_matrix_mult(matrix* m1, matrix* m2, matrix* r) {
 
             int j = 0;
             for (; j <= p - 8; j += 8) {
-                __m256 b_vec = _mm256_loadu_ps(&m2->values[k * p + j]);
-                __m256 r_vec = _mm256_loadu_ps(&r->values[i * p + j]);
+                __m256 b_vec = _mm256_load_ps(&m2->values[k * p + j]);
+                __m256 r_vec = _mm256_load_ps(&r->values[i * p + j]);
                 r_vec = _mm256_fmadd_ps(a_vec, b_vec, r_vec);
-                _mm256_storeu_ps(&r->values[i * p + j], r_vec);
+                _mm256_store_ps(&r->values[i * p + j], r_vec);
             }
 
         }
@@ -53,9 +53,9 @@ int scalar_matrix_mult(float scalar_value, matrix *m, matrix *r){
    
     int total = m->rows * m->cols;
     for (int i = 0; i + 7 < total; i += 8) {
-        __m256 mLine = _mm256_loadu_ps(&m->values[i]);    
+        __m256 mLine = _mm256_load_ps(&m->values[i]);    
         __m256 resLine = _mm256_mul_ps(mLine, scalarArr);  
-        _mm256_storeu_ps(&r->values[i], resLine);
+        _mm256_store_ps(&r->values[i], resLine);
     }
     return 0;    
 }
