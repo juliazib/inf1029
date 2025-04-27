@@ -1,6 +1,0 @@
-linhas_m1,colunas_m1,linhas_m2,colunas_m2,tempo_scalar_ms,tempo_matriz_ms,executavel
-8,8,8,8,0.001000,0.001000,matrix_lib_test_intrisics_intrisics
-32,32,32,32,0.002000,0.033000,matrix_lib_test_intrisics_intrisics
-128,128,128,128,0.032000,1.882000,matrix_lib_test_intrisics_intrisics
-512,512,512,512,0.553000,100.982000,matrix_lib_test_intrisics_intrisics
-1024,1024,1024,1024,1.720000,812.301000,matrix_lib_test_intrisics_intrisics
