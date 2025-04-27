@@ -18,7 +18,9 @@ int matrix_matrix_mult(matrix* m1, matrix* m2, matrix* r) {
     r->rows = m1->rows;
     r->cols = m2->cols;
 
-    if(!r->values) return -1;
+    if(!m1 || !m2 || !r || !m1->values || m2->values|| !r->values) return -1;
+
+    if(m1->rows % 8 != 0 || m1->cols % 8 != 0 || m2->rows % 8 != 0 || m2->cols % 8 != 0) return -3;
 
     memset(r->values, 0, sizeof(float) * r->rows * r->cols);
 
@@ -67,6 +69,7 @@ int matrix_matrix_mult(matrix* m1, matrix* m2, matrix* r) {
 int scalar_matrix_mult(float scalar_value, matrix *m, matrix *r){
     if(!m || !r || !m->values || !r->values) return -1;
     if (m->rows != r->rows || m->cols != r->cols) return -2;
+    if(m->rows % 8 != 0 || m->cols % 8 != 0) return -3;
 
     __m256 scalarArr = _mm256_set1_ps(scalar_value); 
    
