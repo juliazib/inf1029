@@ -18,7 +18,7 @@ int matrix_matrix_mult(matrix* m1, matrix* m2, matrix* r) {
     r->rows = m1->rows;
     r->cols = m2->cols;
 
-    if(!m1 || !m2 || !r || !m1->values || m2->values|| !r->values) return -1;
+    if(!m1 || !m2 || !r || !m1->values || !m2->values) return -1;
 
     if(m1->rows % 8 != 0 || m1->cols % 8 != 0 || m2->rows % 8 != 0 || m2->cols % 8 != 0) return -3;
 
@@ -71,13 +71,18 @@ int scalar_matrix_mult(float scalar_value, matrix *m, matrix *r){
     if (m->rows != r->rows || m->cols != r->cols) return -2;
     if(m->rows % 8 != 0 || m->cols % 8 != 0) return -3;
 
+    float* m_ptr = m->values;
+    float* r_ptr = r->values;
+
     __m256 scalarArr = _mm256_set1_ps(scalar_value); 
    
     int total = m->rows * m->cols;
     for (int i = 0; i < total; i += 8) {
-        __m256 mLine = _mm256_load_ps(&m->values[i]);    
+        __m256 mLine = _mm256_load_ps(m_ptr);    
         __m256 resLine = _mm256_mul_ps(mLine, scalarArr);  
-        _mm256_store_ps(&r->values[i], resLine);
+        _mm256_store_ps(r_ptr, resLine);
+        m_ptr += 8;
+        r_ptr += 8;
     }
     return 0;    
 }
