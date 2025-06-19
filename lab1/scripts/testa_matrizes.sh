@@ -114,35 +114,3 @@ for exec in "${executaveisEscalares[@]}"; do
     done
 done
 
-#EXECUTA PARA MULTIPLICACAO DE MATRIZES
-for exec in "${executaveisMatrizesMatrizes[@]}"; do
-    for dimensao in "${dimensoesMm[@]}"; do
-        for i in $(seq 1 10); do
-            set -- $dimensao
-            linhas_m1=$1
-            colunas_m1=$2
-            linhas_m2=$colunas_m1
-            colunas_m2=$linhas_m1
-
-            matriz1="$ARQUIVOS/matrix_${linhas_m1}x${colunas_m1}.dat"
-            matriz2="$ARQUIVOS/matrix_${linhas_m2}x${colunas_m2}.dat"
-            result1="$ARQUIVOS/result1.dat"
-            result2="$ARQUIVOS/result2.dat"
-
-            echo "Executando teste com matrizes ${linhas_m1}x${colunas_m1} e ${linhas_m2}x${colunas_m2} para $(basename $exec)..."
-
-            output=$($exec -s "$ESCALAR" -r "$linhas_m1" -c "$colunas_m1" -C "$colunas_m2" -m "$matriz1" -M "$matriz2" -o "$result1" -O "$result2")
-
-            tempo_matriz=$(echo "$output" | grep "Matrix product" | awk '{print $(NF-1)}')
-
-            if [ -z "$tempo_matriz" ]; then
-                tempo_matriz="erro"
-            fi
-
-            echo "$linhas_m1,$colunas_m1,$linhas_m2,$colunas_m2,$tempo_matriz,$(basename $exec)" >> "$CSV_RESULTADOS_MATRIZ_MATRIZ"
-        done
-    done
-done
-
-echo "Todos os testes foram finalizados. Resultados salvos em $CSV_RESULTADOS"
-
