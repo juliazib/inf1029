@@ -44,14 +44,14 @@ dimensoesMm=(
 executaveisMatrizesMatrizes=(
     "../build/matrix_lib_test_mm_trad"
     "../build/matrix_lib_test_mm_opt"
-    "../build/matrix_lib_test_mm_intrisics"
+    "../build/matrix_lib_test_mm_threads"
 )
 
 executaveisEscalares=(
     "../build/matrix_lib_test_scalar_colunas"
     "../build/matrix_lib_test_scalar_linhas"
     "../build/matrix_lib_test_scalar_ptr"
-    "../build/matrix_lib_test_scalar_intrisics"
+    "../build/matrix_lib_test_scalar_threads"
 )
 
 

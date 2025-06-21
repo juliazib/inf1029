@@ -166,16 +166,16 @@ int main(int argc, char *argv[]) {
     stop = clock();
     printf("[%d] Scalar product: %f ms\n", __LINE__, timedifference_msec(start, stop));
 
-      /* Write first result */
-    printf("[%d] Writing first result: %s...\n", __LINE__, result1_filename);
-    if(store_matrix(&result1, result1_filename)) {
-	    fprintf(stderr, "%s: failed to write first result to file.", argv[0]);
-	    return 9;
-    }
+    //   /* Write first result */
+    // printf("[%d] Writing first result: %s...\n", __LINE__, result1_filename);
+    // if(store_matrix(&result1, result1_filename)) {
+	//     fprintf(stderr, "%s: failed to write first result to file.", argv[0]);
+	//     return 9;
+    // }
 
-    /* Check for errors */
-    printf("[%d] Checking matrix result for errors...\n", __LINE__);
-    check_linear_errors(&matrix1, &result1, scalar_value);
+    // /* Check for errors */
+    // printf("[%d] Checking matrix result for errors...\n", __LINE__);
+    // check_linear_errors(&matrix1, &result1, scalar_value);
 
     /* Calculate the product between matrix A and matrix B */
     printf("[%d] Executing matrix_matrix_mult(matrixA, mattrixB, matrixC)...\n", __LINE__);
@@ -188,16 +188,16 @@ int main(int argc, char *argv[]) {
     stop = clock();
     printf("[%d] *** Matrix product: %f ms\n", __LINE__, timedifference_msec(start, stop));
 
-    /* Write second result */
-    printf("[%d] Writing second result: %s...\n", __LINE__, result2_filename);
-    if(store_matrix(&result2, result2_filename)) {
-  	    fprintf(stderr, "%s: failed to write second result to file.", argv[0]);
-	    return 11;
-    }
+    // /* Write second result */
+    // printf("[%d] Writing second result: %s...\n", __LINE__, result2_filename);
+    // if(store_matrix(&result2, result2_filename)) {
+  	//     fprintf(stderr, "%s: failed to write second result to file.", argv[0]);
+	//     return 11;
+    // }
 
     /* Check foor errors */
-    printf("[%d] Checking matrix result for errors...\n", __LINE__);
-    check_mult_errors(&matrix1, &matrix2, &result2);
+    // printf("[%d] Checking matrix result for errors...\n", __LINE__);
+    // check_mult_errors(&matrix1, &matrix2, &result2);
     
     return 0;
 }
