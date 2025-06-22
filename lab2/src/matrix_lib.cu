@@ -25,7 +25,7 @@ int scalar_matrix_mult(float scalar_value, matrix *m, matrix *r) {
 
     err = cudaMalloc((void **)&coutput, size * sizeof(float));
     if (err != cudaSuccess) {
-        cudaFree(input);
+        cudaFree(cinput);
         return -3;
     }
 
@@ -96,7 +96,7 @@ __global__ void matrix_matrix_linear_kernel(float* m1, float* m2, float* r, int 
         int k = 0;
 
         while(k < p) {
-            *r_col_ptr += value * m2_row_ptr;
+            *r_col_ptr += value * (*m2_row_ptr);
             r_col_ptr++;
             m2_row_ptr++;
             k++;
