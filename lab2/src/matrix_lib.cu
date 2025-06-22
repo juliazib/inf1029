@@ -55,6 +55,34 @@ __global__ void matrix_mult_kernel(float *mA, float *mB, float *mC, int m, int n
     }
 }
 
+__global__ void matrix_matrix_linear_kernel(float* m1, float* m2, float* r, int m, int n, int p) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i >= m) return;
+
+    float* m1_ptr = m1 + i * n;
+    float* r_ptr = r + i * p;
+
+    float* m1_elem_ptr = m1_ptr;
+    float* r_row_ptr = r_ptr;
+
+    for(int j = 0; j < n; j++) {
+        float value = *m1_elem_ptr;
+        m1_elem_ptr++;
+
+        float* m2_row_ptr = m2 + j * p;
+        float* r_col_ptr = r_row_ptr;
+        
+        int k = 0;
+
+        while(k < p) {
+            *r_col_ptr += value * m2_row_ptr;
+            r_col_ptr++;
+            m2_row_ptr++;
+            k++;
+        }
+    }
+}
+
 
 int matrix_matrix_mult(matrix *m1, matrix *m2, matrix *r) {
     if (!m1 || !m2 || !r || !m1->values || !m2->values || !r->values)
