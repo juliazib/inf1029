@@ -178,15 +178,15 @@ int main(int argc, char *argv[]) {
     // check_linear_errors(&matrix1, &result1, scalar_value);
 
     /* Calculate the product between matrix A and matrix B */
-    printf("[%d] Executing matrix_matrix_mult(matrixA, mattrixB, matrixC)...\n", __LINE__);
-    printf("[%d] Multiplying matrix %ldx%ld by matrix %ldx%ld resulting matrix %ldx%ld\n", __LINE__, matrix1.rows, matrix1.cols, matrix2.rows, matrix2.cols, result2.rows, result2.cols);
-    start = clock();
-    if (matrix_matrix_mult(&matrix1, &matrix2, &result2)) {
-        fprintf(stderr, "[%d] %s: matrix_matrix_mult problem.", __LINE__, argv[0]);
-        return 10;
-    }
-    stop = clock();
-    printf("[%d] *** Matrix product: %f ms\n", __LINE__, timedifference_msec(start, stop));
+    // printf("[%d] Executing matrix_matrix_mult(matrixA, mattrixB, matrixC)...\n", __LINE__);
+    // printf("[%d] Multiplying matrix %ldx%ld by matrix %ldx%ld resulting matrix %ldx%ld\n", __LINE__, matrix1.rows, matrix1.cols, matrix2.rows, matrix2.cols, result2.rows, result2.cols);
+    // start = clock();
+    // if (matrix_matrix_mult(&matrix1, &matrix2, &result2)) {
+    //     fprintf(stderr, "[%d] %s: matrix_matrix_mult problem.", __LINE__, argv[0]);
+    //     return 10;
+    // }
+    // stop = clock();
+    // printf("[%d] *** Matrix product: %f ms\n", __LINE__, timedifference_msec(start, stop));
 
     // /* Write second result */
     // printf("[%d] Writing second result: %s...\n", __LINE__, result2_filename);
