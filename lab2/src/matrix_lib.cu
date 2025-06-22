@@ -5,7 +5,9 @@
 __global__ void scalar_mult_kernel(float scalar, float *input, float *output, int size) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < size) {
-        output[idx] = scalar * input[idx];
+        float *in_ptr = input + idx;
+        float *out_ptr = output + idx;
+        *out_ptr = scalar * (*in_ptr);
     }
 }
 
@@ -14,23 +16,42 @@ int scalar_matrix_mult(float scalar_value, matrix *m, matrix *r) {
         return -2;
 
     int size = m->rows * m->cols;
-    float *d_input = NULL, *d_output = NULL;
+    float *cinput = NULL, *coutput = NULL;
 
-    cudaMalloc((void **)&d_input, size * sizeof(float));
-    cudaMalloc((void **)&d_output, size * sizeof(float));
+    cudaError_t err;
 
-    cudaMemcpy(d_input, m->values, size * sizeof(float), cudaMemcpyHostToDevice);
+    err = cudaMalloc((void **)&cinput, size * sizeof(float));
+    if (err != cudaSuccess) return -3;
+
+    err = cudaMalloc((void **)&coutput, size * sizeof(float));
+    if (err != cudaSuccess) {
+        cudaFree(input);
+        return -3;
+    }
+
+    err = cudaMemcpy(cinput, m->values, size * sizeof(float), cudaMemcpyHostToDevice);
+    if (err != cudaSuccess) {
+        cudaFree(cinput);
+        cudaFree(coutput);
+        return -3;
+    }
 
     int threads = threadsPerBlock;
     int blocks = (size + threads - 1) / threads;
 
-    scalar_mult_kernel<<<blocks, threads>>>(scalar_value, d_input, d_output, size);
+    scalar_mult_kernel<<<blocks, threads>>>(scalar_value, cinput, coutput, size);
     cudaDeviceSynchronize();
     
-    cudaMemcpy(r->values, d_output, size * sizeof(float), cudaMemcpyDeviceToHost);
+    err = cudaMemcpy(r->values, coutput, size * sizeof(float), cudaMemcpyDeviceToHost);
+    
+    if (err != cudaSuccess) {
+        cudaFree(cinput);
+        cudaFree(coutput);
+        return -3;
+    }
 
-    cudaFree(d_input);
-    cudaFree(d_output);
+    cudaFree(cinput);
+    cudaFree(coutput);
 
     return 0;
 }
@@ -104,39 +125,41 @@ int matrix_matrix_mult(matrix *m1, matrix *m2, matrix *r) {
     size_t sizeB = n * p * sizeof(float);
     size_t sizeC = m * p * sizeof(float);
 
-    float *d_A = NULL, *d_B = NULL, *d_C = NULL;
+    float* cA = NULL; 
+    float* cB = NULL; 
+    float* cC = NULL;
 
     cudaError_t err;
 
-    err = cudaMalloc((void **)&d_A, sizeA);
+    err = cudaMalloc((void **)&cA, sizeA);
     if (err != cudaSuccess) return -3;
 
-    err = cudaMalloc((void **)&d_B, sizeB);
+    err = cudaMalloc((void **)&cB, sizeB);
     if (err != cudaSuccess) {
-        cudaFree(d_A);
+        cudaFree(cA);
         return -3;
     }
 
-    err = cudaMalloc((void **)&d_C, sizeC);
+    err = cudaMalloc((void **)&cC, sizeC);
     if (err != cudaSuccess) {
-        cudaFree(d_A);
-        cudaFree(d_B);
+        cudaFree(cA);
+        cudaFree(cB);
         return -3;
     }
 
-    err = cudaMemcpy(d_A, m1->values, sizeA, cudaMemcpyHostToDevice);
+    err = cudaMemcpy(cA, m1->values, sizeA, cudaMemcpyHostToDevice);
     if (err != cudaSuccess) {
-        cudaFree(d_A);
-        cudaFree(d_B);
-        cudaFree(d_C);
+        cudaFree(cA);
+        cudaFree(cB);
+        cudaFree(cC);
         return -3;
     }
 
-    err = cudaMemcpy(d_B, m2->values, sizeB, cudaMemcpyHostToDevice);
+    err = cudaMemcpy(cB, m2->values, sizeB, cudaMemcpyHostToDevice);
     if (err != cudaSuccess) {
-        cudaFree(d_A);
-        cudaFree(d_B);
-        cudaFree(d_C);
+        cudaFree(cA);
+        cudaFree(cB);
+        cudaFree(cC);
         return -3;
     }
 
@@ -148,29 +171,29 @@ int matrix_matrix_mult(matrix *m1, matrix *m2, matrix *r) {
     dim3 threads(threads_x, threads_y);
     dim3 blocks(blocks_x, blocks_y);
 
-    matrix_mult_kernel<<<blocks, threads>>>(d_A, d_B, d_C, m, n, p);
+    matrix_mult_kernel<<<blocks, threads>>>(cA, cB, cC, m, n, p);
     cudaDeviceSynchronize();
 
     err = cudaGetLastError();
     if (err != cudaSuccess) {
-        cudaFree(d_A);
-        cudaFree(d_B);
-        cudaFree(d_C);
+        cudaFree(cA);
+        cudaFree(cB);
+        cudaFree(cC);
         return -3;
     }
     
 
-    err = cudaMemcpy(r->values, d_C, sizeC, cudaMemcpyDeviceToHost);
+    err = cudaMemcpy(r->values, cC, sizeC, cudaMemcpyDeviceToHost);
     if (err != cudaSuccess) {
-        cudaFree(d_A);
-        cudaFree(d_B);
-        cudaFree(d_C);
+        cudaFree(cA);
+        cudaFree(cB);
+        cudaFree(cC);
         return -3;
     }
 
-    cudaFree(d_A);
-    cudaFree(d_B);
-    cudaFree(d_C);
+    cudaFree(cA);
+    cudaFree(cB);
+    cudaFree(cC);
 
     return 0;
 }
