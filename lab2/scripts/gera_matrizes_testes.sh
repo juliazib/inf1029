@@ -39,6 +39,7 @@ dimensoes=(
     "4096 16384"
     "16384 16384"
     "32000 40000"
+    "40000 32000"
 )
 
 for dimensao in "${dimensoes[@]}"; do
