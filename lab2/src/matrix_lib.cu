@@ -13,9 +13,8 @@ __global__ void scalar_mult_kernel(float scalar, float *input, float *output, in
 }
 
 int scalar_matrix_mult(float scalar_value, matrix *m, matrix *r) {
-	if (!m || !r || !m->values || !r->values || m->rows != r->rows || m->cols != r->cols) {
-		return -1;
-	}
+	if (!m || !r || !m->values || !r->values) return -1;
+    if(m->rows != r->rows || m->cols != r->cols) return -2;
 
 	int size = m->rows * m->cols;
 	float *deviceInput = NULL, *deviceOutput = NULL;
@@ -23,18 +22,18 @@ int scalar_matrix_mult(float scalar_value, matrix *m, matrix *r) {
 	cudaError_t err;
 	err = cudaMalloc((void**)&deviceInput, size * sizeof(float));
 	if (err != cudaSuccess){
-        return -1;
+        return -3;
     }
 	err = cudaMalloc((void**)&deviceOutput, size * sizeof(float));
 	if (err != cudaSuccess) {
 		cudaFree(deviceInput);
-		return -1;
+		return -3;
 	}
 
 	err = cudaMemcpy(deviceInput, m->values, size * sizeof(float), cudaMemcpyHostToDevice);
 	if (err != cudaSuccess) {
 		cudaFree(deviceInput); cudaFree(deviceOutput);
-		return -1;
+		return -4;
 	}
 
     int max_blocks = (size + threadsPerBlock - 1) / threadsPerBlock;
@@ -49,13 +48,13 @@ int scalar_matrix_mult(float scalar_value, matrix *m, matrix *r) {
 	if (err != cudaSuccess) {
         fprintf(stderr, "Erro no kernel: %s\n", cudaGetErrorString(err));
 		cudaFree(deviceInput); cudaFree(deviceOutput);
-		return -1;
+		return -5;
 	}
 
 	err = cudaMemcpy(r->values, deviceOutput, size * sizeof(float), cudaMemcpyDeviceToHost);
 	if (err != cudaSuccess) {
 		cudaFree(deviceInput); cudaFree(deviceOutput);
-		return -1;
+		return -4;
 	}
 
 	cudaFree(deviceInput);
@@ -85,10 +84,10 @@ __global__ void matrix_mult_1d(float *mA, float *mB, float *mC, int m, int n, in
 
 int matrix_matrix_mult(matrix *m1, matrix *m2, matrix *r) {
     if (!m1 || !m2 || !r || !m1->values || !m2->values || !r->values)
-        return -2;
+        return -1;
 
     if (m1->cols != m2->rows)
-        return -1;
+        return -2;
 
     int m = m1->rows;
     int n = m1->cols;
@@ -128,7 +127,7 @@ int matrix_matrix_mult(matrix *m1, matrix *m2, matrix *r) {
         cudaFree(deviceA);
         cudaFree(deviceB);
         cudaFree(deviceC);
-        return -3;
+        return -4;
     }
 
     err = cudaMemcpy(deviceB, m2->values, sizeB, cudaMemcpyHostToDevice);
@@ -136,7 +135,7 @@ int matrix_matrix_mult(matrix *m1, matrix *m2, matrix *r) {
         cudaFree(deviceA);
         cudaFree(deviceB);
         cudaFree(deviceC);
-        return -3;
+        return -4;
     }
 
     int size = m * p;
@@ -153,7 +152,7 @@ int matrix_matrix_mult(matrix *m1, matrix *m2, matrix *r) {
       cudaFree(deviceA); 
       cudaFree(deviceB); 
       cudaFree(deviceC);
-      return -1;
+      return -5;
     }
 
     err = cudaGetLastError();
@@ -161,7 +160,7 @@ int matrix_matrix_mult(matrix *m1, matrix *m2, matrix *r) {
         cudaFree(deviceA);
         cudaFree(deviceB);
         cudaFree(deviceC);
-        return -3;
+        return -5;
     }
     
 
@@ -170,7 +169,7 @@ int matrix_matrix_mult(matrix *m1, matrix *m2, matrix *r) {
         cudaFree(deviceA);
         cudaFree(deviceB);
         cudaFree(deviceC);
-        return -3;
+        return -4;
     }
 
     cudaFree(deviceA);
